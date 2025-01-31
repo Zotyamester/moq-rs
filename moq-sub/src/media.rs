@@ -37,6 +37,10 @@ impl<O: SmartWriter + Send + Unpin + 'static> Media<O> {
         })
     }
 
+    pub fn get_full_track_name(group: &SubgroupReader) -> String {
+        group.info.track.namespace.to_utf8_path() + ":" + &group.info.track.name
+    }
+
     pub async fn run(&mut self) -> anyhow::Result<()> {
         let moov = {
             let init_track_name = "0.mp4";
@@ -69,7 +73,7 @@ impl<O: SmartWriter + Send + Unpin + 'static> Media<O> {
             self.output
                 .lock()
                 .await
-                .write_group(group.group_id, &buf)
+                .write_group(Self::get_full_track_name(&group), group.group_id, &buf)
                 .await?;
             log::debug!("💻: LOCK ENDS");
             let mut reader = Cursor::new(&buf);
@@ -163,9 +167,11 @@ impl<O: SmartWriter + Send + Unpin + 'static> Media<O> {
         log::debug!("💻: LOCK STARTS ({})", sname);
         log::debug!("🤡: group_id={}", group.group_id);
 
-        if group.group_id < guard.last_group_id() {
-            log::debug!("💻: LOCK ENDS");
-            return Ok(());
+        if let Some(last_group_id) = guard.last_group_id(&Self::get_full_track_name(&group)) {
+            if group.group_id <= last_group_id {
+                log::debug!("💻: LOCK ENDS (early)");
+                return Ok(());
+            }
         }
 
         while let Some(object) = group.next().await? {
@@ -176,7 +182,9 @@ impl<O: SmartWriter + Send + Unpin + 'static> Media<O> {
             );
             let buf = Self::recv_object(object).await?;
 
-            guard.write_group(group.group_id, &buf).await?;
+            guard
+                .write_group(Self::get_full_track_name(&group), group.group_id, &buf)
+                .await?;
         }
 
         log::debug!("💻: LOCK ENDS");
