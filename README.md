@@ -25,7 +25,19 @@ Launch a basic cluster, including provisioning certs and deploying root certific
 make run
 ```
 
-Then, visit https://quic.video/publish/?server=localhost:4443.
+Alternatively, a simple `docker compose up` is sufficient.
+
+Then run a publisher:
+
+```
+PORT=4443 ./dev/pub
+```
+
+Then run an enhanced subscriber:
+
+```
+PORT1=4443 PORT2=4444 ./dev/sub
+```
 
 For more control, use the [dev helper scripts](dev/README.md).
 
