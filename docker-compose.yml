@@ -11,15 +11,10 @@ x-moq: &x-moq
       condition: service_completed_successfully
 
 services:
-  redis:
-    image: redis:7
-    ports:
-      - "6379"
-
   api:
     <<: *x-moq
     entrypoint: moq-api
-    command: --redis redis://redis:6379
+    command:
     ports:
       - "80"
 

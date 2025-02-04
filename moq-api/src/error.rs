@@ -2,9 +2,6 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ApiError {
-    #[error("redis error: {0}")]
-    Redis(#[from] redis::RedisError),
-
     #[error("reqwest error: {0}")]
     Request(#[from] reqwest::Error),
 

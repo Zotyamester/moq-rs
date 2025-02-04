@@ -29,12 +29,6 @@ serde_json = "1"
 
 # CLI
 clap = { version = "4", features = ["derive"] }
-
-# Database
-redis = { version = "0.25", features = [
-	"tokio-rustls-comp",
-	"connection-manager",
-] }
 url = { version = "2", features = ["serde"] }
 
 # Error handling
